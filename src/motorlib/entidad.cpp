@@ -331,7 +331,7 @@ int Entidad::fixBateria_sig_accion_jugador(unsigned char celdaJugador, int difAl
         bateria_sig_accion -= 5;
       break;
     case 'S':
-      bateria_sig_accion = 1;
+      bateria_sig_accion = 3;
       if (difAltura > 0)
         bateria_sig_accion += 2;
       else if (difAltura < 0)
@@ -360,10 +360,10 @@ int Entidad::fixBateria_sig_accion_jugador(unsigned char celdaJugador, int difAl
     switch (celdaJugador)
     {
     case 'A':
-      bateria_sig_accion = 10;
+      bateria_sig_accion = 16;
       break;
     case 'T':
-      bateria_sig_accion = 5;
+      bateria_sig_accion = 3;
       break;
     } // Fin switch celdaJugador
     break;
