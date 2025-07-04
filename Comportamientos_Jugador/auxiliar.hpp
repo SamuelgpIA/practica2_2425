@@ -18,6 +18,19 @@ struct EstadoA {
   }
 };
 
+struct EstadoA_N3{
+  int f;
+  int c;
+  int brujula;
+  int coste;
+  int h;
+  bool zapatillas;
+
+  bool operator==(const EstadoA_N3 &st) const{
+    return (f == st.f and c == st.c and brujula == st.brujula);
+  }
+};
+
 struct NodoA{
   EstadoA estado;
   list<Action> secuencia;
@@ -37,6 +50,19 @@ struct NodoA{
   }
 };
 
+struct NodoA_N3{
+  EstadoA_N3 estado;
+  list<Action> secuencia;
+
+  bool operator==(const NodoA_N3 &node) const{
+    return estado == node.estado;
+  }
+
+  bool operator<(const NodoA_N3 &node) const{
+    return ((estado.coste + estado.h) > (node.estado.coste + node.estado.h));
+  }
+};
+
 class ComportamientoAuxiliar : public Comportamiento
 {
 
@@ -47,6 +73,10 @@ public:
     last_action = IDLE;
     tiene_zapatillas = false;
     giro45Izq = 0;
+    vector<int> col(size, 0);
+    for (int i = 0; i < size; i++){
+      memmory.push_back(col);
+    }
   }
   ComportamientoAuxiliar(std::vector<std::vector<unsigned char>> mapaR, std::vector<std::vector<unsigned char>> mapaC) : Comportamiento(mapaR,mapaC)
   {
@@ -70,7 +100,10 @@ public:
                       const vector<vector<unsigned char>> &terreno, const vector<vector<unsigned char>> &altura);
   list<Action> AnchuraAuxiliar_V2(const EstadoA &inicio, const EstadoA &final, 
                       const vector<vector<unsigned char>> &terreno, const vector<vector<unsigned char>> &altura);
+  list<Action> AuxiliarA(const EstadoA_N3 &inicio, const EstadoA_N3 &final,
+                      const vector<vector<unsigned char>> &terreno, const vector<vector<unsigned char>> &altura);
   void VisualizaPlan(const EstadoA &st, const list<Action> &plan);
+  void VisualizaPlan_N3(const EstadoA_N3 &st, const list<Action> &plan);
 
 private:
   // Definir Variables de Estado
@@ -81,6 +114,7 @@ private:
   //Variables nivel E
   list<Action> plan;
   bool hayPlan;
+  vector<vector<int>> memmory;
 };
 
 #endif
