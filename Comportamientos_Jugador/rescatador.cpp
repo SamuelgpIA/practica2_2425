@@ -1103,7 +1103,7 @@ Action ComportamientoRescatador::ComportamientoRescatadorNivel_0(Sensores sensor
 		accion = TURN_SR;
 		giro45Izq --;
 	}
-	else {
+	else {//Esta sección nos ayuda a localizar una X alcanzable por altura
 		int objetivo_relativo = -1;
 		bool objetivo_encontrado = false;
 		int posiciones[] = {2, 1, 3, 4, 5, 6, 9, 10, 11, 13, 14};
@@ -1131,7 +1131,7 @@ Action ComportamientoRescatador::ComportamientoRescatadorNivel_0(Sensores sensor
 			}
 		}
 
-		if (!objetivo_encontrado){
+		if (!objetivo_encontrado){//Si no se encuentra una X se pasa a buscar una casilla a la que ir
 			char i = ViablePorAlturaR(sensores.superficie[1], sensores.cota[1]-sensores.cota[0], tiene_zapatillas);
 			char c = ViablePorAlturaR(sensores.superficie[2], sensores.cota[2]-sensores.cota[0], tiene_zapatillas);
 			char d = ViablePorAlturaR(sensores.superficie[3], sensores.cota[3]-sensores.cota[0], tiene_zapatillas);

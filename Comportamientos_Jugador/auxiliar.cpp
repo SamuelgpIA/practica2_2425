@@ -45,20 +45,35 @@ void AnularMatrizA(vector<vector<unsigned char>> &m){
 	}
 }
 
-int VeoCasillaInteresanteA_N0 (char lugar[], int tiempo[]){
-	int mayor =  -1000;
-	int mayor_pos = -1;
-
-	for (int i = 0; i < sizeof(tiempo); i++){
-		if (lugar[i] == 'C' or lugar[i] == 'X'){
-			if (tiempo[i] > mayor){
-				mayor = tiempo[i];
-				mayor_pos = i;
-			}
-		}
+int VeoCasillaInteresanteA_N0 (char i, char c, char d, bool zap, int t1, int t2, int t3){
+	if (!zap){
+		if (d == 'D') return 3;
+		else if (c == 'D') return 2;
+		else if (i == 'D') return 1;
 	}
-	
-	return mayor_pos;
+
+	if (d == 'C' or d == 'X'){
+		if (c == 'C' or c == 'X'){
+			if (t3 < t2) return 2;
+			else return 3;
+		}
+		else if (i == 'C' or i == 'X'){
+			if (t3 < t1) return 1;
+			else return 3;
+		}
+		else return 3;
+	}
+	else if (c == 'C' or c == 'X'){
+		if (i == 'C' or i == 'X'){
+			if (t2 < t1) return 1;
+			else return 2;
+		}
+		else return 2;
+	}
+	else if (i == 'C' or i == 'X'){
+		return 1;
+	}
+	else return 0;
 }
 
 int VeoCasillaInteresanteA_N1 (char i, char c, char d, bool zap, int t1, int t2, int t3){
@@ -673,7 +688,7 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 		accion = TURN_SR;
 		giro45Izq --;
 	}
-	else {
+	else {//En esta sección se busca una casilla X que sea accesible por altura
 		int objetivo_relativo = -1;
 		bool objetivo_encontrado = false;
 		int posiciones[] = {2, 3, 1, 6, 8, 7, 5, 4};
@@ -684,6 +699,10 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 				objetivo_encontrado = true;
 			}
 		}
+		
+
+		//Si la primera casilla no es alcanzable, busca otra que sí lo sea
+		//en todo el cono de visión
 
 		if (sensores.cota[objetivo_relativo] - sensores.cota[0] > 1){
 			objetivo_encontrado = false;
@@ -701,6 +720,7 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 			}
 		}
 
+		//Si encuentra un objetivo, va a moverse hacia él
 		if (objetivo_relativo != -1){
 			if (objetivo_relativo == 2 || objetivo_relativo == 6){
 				accion = WALK;
@@ -722,287 +742,70 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 			}
 		}
 		
-		if (!objetivo_encontrado){
-			char posiciones[8];
-			posiciones[0] = ViablePorAlturaA(mapaResultado.at(sensores.posF-1).at(sensores.posC), mapaCotas[sensores.posF-1][sensores.posC] - sensores.cota[0]);
-			posiciones[1] = ViablePorAlturaA(mapaResultado.at(sensores.posF-1).at(sensores.posC+1), mapaCotas[sensores.posF-1][sensores.posC+1] - sensores.cota[0]);
-			posiciones[2] = ViablePorAlturaA(mapaResultado.at(sensores.posF).at(sensores.posC+1), mapaCotas[sensores.posF][sensores.posC+1] - sensores.cota[0]);
-			posiciones[3] = ViablePorAlturaA(mapaResultado.at(sensores.posF+1).at(sensores.posC+1), mapaCotas[sensores.posF+1][sensores.posC+1] - sensores.cota[0]);
-			posiciones[4] = ViablePorAlturaA(mapaResultado.at(sensores.posF+1).at(sensores.posC), mapaCotas[sensores.posF+1][sensores.posC] - sensores.cota[0]);
-			posiciones[5] = ViablePorAlturaA(mapaResultado.at(sensores.posF+1).at(sensores.posC-1), mapaCotas[sensores.posF+1][sensores.posC-1] - sensores.cota[0]);
-			posiciones[6] = ViablePorAlturaA(mapaResultado.at(sensores.posF).at(sensores.posC-1), mapaCotas[sensores.posF][sensores.posC-1] - sensores.cota[0]);
-			posiciones[7] = ViablePorAlturaA(mapaResultado.at(sensores.posF-1).at(sensores.posC-1), mapaCotas[sensores.posF-1][sensores.posC-1] - sensores.cota[0]);
+		if (!objetivo_encontrado){//Si no lo encuentra, busca una casilla a la que moverse
+			char i = ViablePorAlturaA(sensores.superficie[1], sensores.cota[1]-sensores.cota[0]);
+			char c = ViablePorAlturaA(sensores.superficie[2], sensores.cota[2]-sensores.cota[0]);
+			char d = ViablePorAlturaA(sensores.superficie[3], sensores.cota[3]-sensores.cota[0]);
+			int t_i;
+			int t_c;
+			int t_d;
 
-			int frecuencia[8];
-			frecuencia[0] = memmory.at(sensores.posF-1).at(sensores.posC);
-			frecuencia[1] = memmory.at(sensores.posF-1).at(sensores.posC+1);
-			frecuencia[2] = memmory.at(sensores.posF).at(sensores.posC+1);
-			frecuencia[3] = memmory.at(sensores.posF+1).at(sensores.posC+1);
-			frecuencia[4] = memmory.at(sensores.posF+1).at(sensores.posC);
-			frecuencia[5] = memmory.at(sensores.posF+1).at(sensores.posC-1);
-			frecuencia[6] = memmory.at(sensores.posF).at(sensores.posC-1);
-			frecuencia[7] = memmory.at(sensores.posF-1).at(sensores.posC-1);
-
-			int pos = VeoCasillaInteresanteA_N0(posiciones, frecuencia);
-
-			switch(pos){
-				case 0:
-					if (sensores.rumbo == norte){
-						accion = WALK;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					else if (sensores.rumbo == este){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					else if (sensores.rumbo == sur){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = TURN_SR;
-					}
+			switch(sensores.rumbo){
+				case norte:
+					t_i = memmory.at(sensores.posF-1).at(sensores.posC-1);
+					t_c = memmory.at(sensores.posF-1).at(sensores.posC);
+					t_d = memmory.at(sensores.posF-1).at(sensores.posC+1);
+					break;
+				case noreste:
+					t_i = memmory.at(sensores.posF-1).at(sensores.posC);
+					t_c = memmory.at(sensores.posF-1).at(sensores.posC+1);
+					t_d = memmory.at(sensores.posF).at(sensores.posC+1);
+					break;
+				case este:
+					t_i = memmory.at(sensores.posF-1).at(sensores.posC+1);
+					t_c = memmory.at(sensores.posF).at(sensores.posC+1);
+					t_d = memmory.at(sensores.posF+1).at(sensores.posC+1);
+					break;
+				case sureste:
+					t_i = memmory.at(sensores.posF).at(sensores.posC+1);
+					t_c = memmory.at(sensores.posF+1).at(sensores.posC+1);
+					t_d = memmory.at(sensores.posF+1).at(sensores.posC);
+					break;
+				case sur:
+					t_i = memmory.at(sensores.posF+1).at(sensores.posC+1);
+					t_c = memmory.at(sensores.posF+1).at(sensores.posC);
+					t_d = memmory.at(sensores.posF+1).at(sensores.posC-1);
+					break;
+				case suroeste:
+					t_i = memmory.at(sensores.posF+1).at(sensores.posC);
+					t_c = memmory.at(sensores.posF+1).at(sensores.posC-1);
+					t_d = memmory.at(sensores.posF).at(sensores.posC-1);
+					break;
+				case oeste:
+					t_i = memmory.at(sensores.posF+1).at(sensores.posC-1);
+					t_c = memmory.at(sensores.posF).at(sensores.posC-1);
+					t_d = memmory.at(sensores.posF-1).at(sensores.posC-1);
+					break;
+				case noroeste:
+					t_i = memmory.at(sensores.posF).at(sensores.posC-1);
+					t_c = memmory.at(sensores.posF-1).at(sensores.posC-1);
+					t_d = memmory.at(sensores.posF-1).at(sensores.posC);
+			}
+			int pos = VeoCasillaInteresanteA_N0(i, c, d, tiene_zapatillas, t_i, t_c, t_d);
+			switch (pos){
+				case 2:
+					accion = WALK;
 					break;
 				case 1:
-					if (sensores.rumbo == norte){
-						accion = TURN_SR;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = WALK;
-					}
-					else if (sensores.rumbo == este){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					else if (sensores.rumbo == sur){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					break;
-				case 2:
-					if (sensores.rumbo == norte){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = TURN_SR;
-					}
-					else if (sensores.rumbo == este){
-						accion = WALK;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					else if (sensores.rumbo == sur){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
+					giro45Izq = 1;
+					accion = TURN_L;
 					break;
 				case 3:
-					if (sensores.rumbo == norte){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					else if (sensores.rumbo == este){
-						accion = TURN_SR;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = WALK;
-					}
-					else if (sensores.rumbo == sur){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
+					accion = TURN_SR;
 					break;
-				case 4:
-					if (sensores.rumbo == norte){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
-					else if (sensores.rumbo == este){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = TURN_SR;
-					}
-					else if (sensores.rumbo == sur){
-						accion = WALK;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					break;
-				case 5:
-					if (sensores.rumbo == norte){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
-					else if (sensores.rumbo == este){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					else if (sensores.rumbo == sur){
-						accion = TURN_SR;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = WALK;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					break;
-				case 6:
-					if (sensores.rumbo == norte){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					else if (sensores.rumbo == este){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
-					else if (sensores.rumbo == sur){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = TURN_SR;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = WALK;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					break;
-				case 7:
-					if (sensores.rumbo == norte){
-						accion = TURN_SR;
-						giro45Izq = 6;
-					}
-					else if (sensores.rumbo == noreste){
-						accion = TURN_SR;
-						giro45Izq = 5;
-					}
-					else if (sensores.rumbo == este){
-						accion = TURN_SR;
-						giro45Izq = 4;
-					}
-					else if (sensores.rumbo == sureste){
-						accion = TURN_SR;
-						giro45Izq = 3;
-					}
-					else if (sensores.rumbo == sur){
-						accion = TURN_SR;
-						giro45Izq = 2;
-					}
-					else if (sensores.rumbo == suroeste){
-						accion = TURN_SR;
-						giro45Izq = 1;
-					}
-					else if (sensores.rumbo == oeste){
-						accion = TURN_SR;
-					}
-					else if (sensores.rumbo == noroeste){
-						accion = WALK;
-					}
-					break;
+				
 			}
+			
 			
 			if (sensores.agentes[pos] == 'r'){
 				giro45Izq = 6;
