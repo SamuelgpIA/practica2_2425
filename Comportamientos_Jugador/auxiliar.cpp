@@ -720,7 +720,7 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 			memmory.at(i).at(j) ++;
 		}
 	}
-	memmory.at(sensores.posF).at(sensores.posC) = 0;
+	memmory.at(sensores.posF).at(sensores.posC) = -10;
 
 	if (sensores.superficie[0] == 'D'){
 		tiene_zapatillas = true;
@@ -736,7 +736,7 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 	else {
 		int objetivo_relativo = -1;
 		bool objetivo_encontrado = false;
-		int posiciones[] = {2, 1, 3, 4, 5, 6, 9, 10, 11, 13, 14};
+		int posiciones[] = {2, 3, 1, 6, 8, 7, 5, 4};
 
 		for (int i = 0; i < posiciones[sizeof(posiciones) - 1] && !objetivo_encontrado; i++){
 			if (sensores.superficie[i] == 'X'){
@@ -745,16 +745,37 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 			}
 		}
 
+		if (sensores.cota[objetivo_relativo] - sensores.cota[0] > 1){
+			objetivo_encontrado = false;
+			for (int j = 0; j < sensores.superficie.size() && !objetivo_encontrado; j++){
+				if (sensores.superficie[j] == 'X' && j != objetivo_relativo){
+					if (sensores.cota[j] - sensores.cota[0] <= 1){
+						objetivo_relativo = j;
+						objetivo_encontrado = true;
+					}
+				}
+			}
+			
+			if (!objetivo_encontrado){
+				objetivo_relativo = -1;
+			}
+		}
+
 		if (objetivo_relativo != -1){
-			if (objetivo_relativo == 2){
+			if (objetivo_relativo == 2 || objetivo_relativo == 6){
 				accion = WALK;
 			}
-			else if (objetivo_relativo == 1 || objetivo_relativo == 4){
+			else if (objetivo_relativo == 1 || objetivo_relativo == 4 || objetivo_relativo == 5){
 				accion = TURN_SR;
-				giro45Izq = 6;
+				if ((sensores.superficie[1] == 'X' or sensores.superficie[1] == 'C') and sensores.cota[1] - sensores.cota[0] <= 1){
+					giro45Izq = 6;
+				}
 			}
-			else if (objetivo_relativo == 3){
+			else if (objetivo_relativo == 3 || objetivo_relativo == 7 || objetivo_relativo == 8){
 				accion = TURN_SR;
+				if ((sensores.superficie[3] != 'X' and sensores.superficie[3] != 'C') or sensores.cota[3] - sensores.cota[0] > 1){
+					giro45Izq = 6;
+				}
 			}
 			else {
 				objetivo_encontrado = false;
@@ -916,8 +937,9 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 					t_d = memmory.at(sensores.posF-1).at(sensores.posC);
 					t_i2 = memmory.at(sensores.posF).at(sensores.posC-2);
 					t_d2 = memmory.at(sensores.posF-2).at(sensores.posC);
+					break;
 			}
-			
+
 			int pos = VeoCasillaInteresanteA_N0(i, c, d, tiene_zapatillas, t_i, t_c, t_d);
 			
 			switch(pos){
