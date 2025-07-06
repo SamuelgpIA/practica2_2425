@@ -736,29 +736,32 @@ Action ComportamientoAuxiliar::ComportamientoAuxiliarNivel_0(Sensores sensores)
 	else {
 		int objetivo_relativo = -1;
 		bool objetivo_encontrado = false;
-		char x = '#';
+		int posiciones[] = {2, 1, 3, 4, 5, 6, 9, 10, 11, 13, 14};
 
-		for (int i = 0; i < 16 && !objetivo_encontrado; i++){
+		for (int i = 0; i < posiciones[sizeof(posiciones) - 1] && !objetivo_encontrado; i++){
 			if (sensores.superficie[i] == 'X'){
-				objetivo_relativo == i;
+				objetivo_relativo = i;
 				objetivo_encontrado = true;
 			}
 		}
 
 		if (objetivo_relativo != -1){
-			
-			if (objetivo_relativo == 2 || objetivo_relativo == 6 || objetivo_relativo == 12){
+			if (objetivo_relativo == 2){
 				accion = WALK;
 			}
-			else if (objetivo_relativo == 1 || objetivo_relativo == 5 || objetivo_relativo == 9 || objetivo_relativo == 13 || objetivo_relativo == 14){
+			else if (objetivo_relativo == 1 || objetivo_relativo == 4){
 				accion = TURN_SR;
-				giro45Izq = 5;
+				giro45Izq = 6;
+			}
+			else if (objetivo_relativo == 3){
+				accion = TURN_SR;
 			}
 			else {
-				accion = TURN_SR;
+				objetivo_encontrado = false;
 			}
 		}
-		else {
+		
+		if (!objetivo_encontrado){
 			char i = ViablePorAlturaA(sensores.superficie[1], sensores.cota[1]-sensores.cota[0]);
 			char c = ViablePorAlturaA(sensores.superficie[2], sensores.cota[2]-sensores.cota[0]);
 			char d = ViablePorAlturaA(sensores.superficie[3], sensores.cota[3]-sensores.cota[0]);
